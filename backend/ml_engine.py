@@ -415,13 +415,7 @@ def predict_from_dict(payload: dict) -> dict:
         "tilt_deg": float(payload.get("tilt_deg", 0.8)),
     }
     row = pd.DataFrame([features])[LANDSLIDE_FEATURE_COLS]
-    try:
-        proba = float(ls_model.predict_proba(row)[0, 1])
-    except Exception:
-        slope_v = features["slope_deg"]
-        rain_v = features["rainfall_24h_mm"]
-        moist_v = features["soil_moisture_pct"]
-        proba = min(0.96, max(0.08, (slope_v / 45.0) * 0.45 + (rain_v / 200.0) * 0.35 + (moist_v / 100.0) * 0.20))
+    proba = float(ls_model.predict_proba(row)[0, 1])
     velocity = float(payload.get("velocity_mm_h", features["displacement_mm"] / 6))
     rain_thr = float(payload.get("rainfall_threshold_mm", 120))
     score = dynamic_risk_score(proba, velocity, features["rainfall_24h_mm"], rain_thr, features["slope_deg"])
@@ -467,10 +461,7 @@ def predict_multi_hazard(payload: dict) -> dict:
         "tilt_deg": tilt,
     }
     row_ls = pd.DataFrame([ls_features])[LANDSLIDE_FEATURE_COLS]
-    try:
-        ls_proba = float(ls_model.predict_proba(row_ls)[0, 1])
-    except Exception:
-        ls_proba = min(0.96, max(0.08, (slope / 45.0) * 0.45 + (rain24 / 200.0) * 0.35 + (moisture / 100.0) * 0.20))
+    ls_proba = float(ls_model.predict_proba(row_ls)[0, 1])
     velocity = float(payload.get("velocity_mm_h", disp / 4.0))
     ls_score = dynamic_risk_score(ls_proba, velocity, rain24, 120.0, slope)
 
@@ -487,10 +478,7 @@ def predict_multi_hazard(payload: dict) -> dict:
         "catchment_rainfall_48h_mm": catchment_48h,
     }
     row_fl = pd.DataFrame([fl_features])[FLOOD_FEATURE_COLS]
-    try:
-        fl_proba = float(fl_model.predict_proba(row_fl)[0, 1])
-    except Exception:
-        fl_proba = min(0.95, max(0.05, (rain24 / 200.0) * 0.40 + (moisture / 100.0) * 0.35 + (1000.0 / max(50.0, dist_river)) * 0.25))
+    fl_proba = float(fl_model.predict_proba(row_fl)[0, 1])
     fl_score = dynamic_flood_score(fl_proba, rain24, dist_river, slope, moisture)
 
     # 3. Compound Disaster Assessment

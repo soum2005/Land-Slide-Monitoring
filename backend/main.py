@@ -84,9 +84,3 @@ async def telemetry_ws(ws: WebSocket):
             await ws.send_json({"echo": msg, "hint": "Use POST /api/simulation/tick for live risk ticks"})
     except WebSocketDisconnect:
         return
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=False)
-
