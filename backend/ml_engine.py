@@ -281,7 +281,16 @@ def load_artifacts():
         or not os.path.exists(METRICS_PATH)
     ):
         train_and_persist()
-    return joblib.load(METRICS_PATH), joblib.load(LANDSLIDE_MODEL_PATH), joblib.load(FLOOD_MODEL_PATH)
+    try:
+        metrics = joblib.load(METRICS_PATH)
+        ls_model = joblib.load(LANDSLIDE_MODEL_PATH)
+        fl_model = joblib.load(FLOOD_MODEL_PATH)
+        # Test predict_proba to ensure no unpickling attribute errors
+        _ = getattr(ls_model, "multi_class", None)
+        return metrics, ls_model, fl_model
+    except Exception:
+        payload = train_and_persist()
+        return payload, joblib.load(LANDSLIDE_MODEL_PATH), joblib.load(FLOOD_MODEL_PATH)
 
 
 # ======================================

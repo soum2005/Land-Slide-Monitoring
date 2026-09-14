@@ -106,6 +106,37 @@ def seed(db):
     if not db.query(SystemSetting).first():
         db.add(SystemSetting())
 
+    # Seed or update default admin and team users
+    default_users = [
+        ("epsita", "Epsita Maity", "epsitamaity629@gmail.com", "Admin", "Directorate of Disaster Management"),
+        ("epsitamaity629@gmail.com", "Epsita Maity", "epsitamaity629@gmail.com", "Admin", "Directorate of Disaster Management"),
+        ("soumya", "Soumya Saha", "soumyasaha205@gmail.com", "Admin", "NER Landslide Engineering Directorate"),
+        ("soumyasaha205@gmail.com", "Soumya Saha", "soumyasaha205@gmail.com", "Admin", "NER Landslide Engineering Directorate"),
+        ("sanjana", "Sanjana Jana", "sanjanajana464@gmail.com", "Field Officer", "Field Response Team"),
+        ("monira", "Monira Protappur", "monira.protappur@gmail.com", "Citizen", "Public"),
+    ]
+    for uname, fname, email, role, org in default_users:
+        u = db.query(User).filter(User.username == uname).first()
+        if not u:
+            u = db.query(User).filter(User.email == email).first()
+        if not u:
+            db.add(
+                User(
+                    username=uname,
+                    full_name=fname,
+                    email=email,
+                    hashed_password=hash_password("password123"),
+                    role=role,
+                    organization=org,
+                    is_active=True,
+                )
+            )
+        else:
+            # Enforce target role for core admin emails
+            if email in ("epsitamaity629@gmail.com", "soumyasaha205@gmail.com") and u.role != "Admin":
+                u.role = "Admin"
+    db.commit()
+
     if db.query(MonitoringLocation).count() > 0:
         db.commit()
         return True
