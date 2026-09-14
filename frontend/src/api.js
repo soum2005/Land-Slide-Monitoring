@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL || "";
+const BASE = import.meta.env.VITE_API_URL || "https://land-slide-monitoring.onrender.com";
 
 export async function api(path, options = {}) {
   const token = localStorage.getItem("ner_token");
